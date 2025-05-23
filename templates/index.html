@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Medical Diagnosis Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 MedBot</h1>
+        <p class="subtitle">Your Smart Medical Diagnosis Assistant</p>
+
+        <form method="POST" id="chatbot-form">
+            <label for="language">Select Language:</label>
+            <select id="language" name="language">
+              <option value="en" {% if language == 'en' %}selected{% endif %}>English</option>
+              <option value="hi" {% if language == 'hi' %}selected{% endif %}>Hindi</option>
+              <option value="pa" {% if language == 'pa' %}selected{% endif %}>Punjabi</option>
+              <option value="bn" {% if language == 'bn' %}selected{% endif %}>Bengali</option>
+              <option value="ta" {% if language == 'ta' %}selected{% endif %}>Tamil</option>
+            </select>
+
+            <label for="symptoms">Enter your symptoms:</label>
+            <div class="input-with-mic">
+                <input
+                    type="text"
+                    id="symptoms"
+                    name="symptoms"
+                    placeholder="e.g. fever, cough, headache"
+                    required
+                    value="{{ symptoms|default('') }}"
+                />
+                <button id="mic-button" type="button" class="mic-button material-icon-button" title="Click to speak" aria-label="Voice input">
+                    <span class="material-icons">mic</span>
+                </button>
+            </div>
+            <div id="voice-status" class="voice-status"></div>
+            <div class="button-row">
+                <input type="submit" value="🧠 Diagnose" />
+                <button type="button" onclick="clearForm()">🧽 Clear</button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="result-box" id="result-box">
+            <h3>🧾 Diagnosis Result</h3>
+            {% if result.error %}
+            <p class="error">{{ result.error }}</p>
+            {% else %}
+            <p><strong>🦠 Disease:</strong> <span>{{ result.disease }}</span></p>
+            <p><strong>💊 Medicine:</strong> <span>{{ result.medicine }}</span></p>
+            <p><strong>🥗 Diet Chart:</strong> <span>{{ result.diet }}</span></p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="feedback-section" id="feedback-section" style="display:none;">
+            <p>Was this helpful?</p>
+            <div class="feedback-buttons">
+                <button id="feedback-yes" onclick="handleFeedback('yes')">👍 Yes</button>
+                <button id="feedback-no" onclick="handleFeedback('no')">👎 No</button>
+            </div>
+            <p id="feedback-response" class="feedback-response"></p>
+        </div>
+
+        <p class="note">
+            ⚠️ <strong>Note:</strong> This is an AI-based prediction. Always consult your doctor for professional medical
+            advice. Voice input is processed in your browser and not stored on our servers.
+        </p>
+    </div>
+
+    <script>
+        function clearForm() {
+            document.getElementById("symptoms").value = "";
+            const resultBox = document.getElementById("result-box");
+            if (resultBox) resultBox.style.display = "none";
+
+            const feedbackSection = document.getElementById("feedback-section");
+            feedbackSection.style.display = "none";
+
+            document.getElementById("feedback-yes").disabled = false;
+            document.getElementById("feedback-no").disabled = false;
+            document.getElementById("feedback-response").textContent = "";
+            document.getElementById("voice-status").textContent = "";
+        }
+
+        function handleFeedback(response) {
+            document.getElementById("feedback-yes").disabled = true;
+            document.getElementById("feedback-no").disabled = true;
+
+            const feedbackResponse = document.getElementById("feedback-response");
+            feedbackResponse.textContent = response === "yes" 
+                ? "Thank you for your feedback! 😊" 
+                : "Thanks for your honesty! We'll try to improve. 🙏";
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const micButton = document.getElementById('mic-button');
+            const micIcon = micButton.querySelector('.material-icons');
+            const voiceStatus = document.getElementById('voice-status');
+            const symptomsInput = document.getElementById('symptoms');
+
+            if (!('webkitSpeechRecognition' in window)) {
+                micButton.disabled = true;
+                micButton.title = "Voice input not supported in your browser";
+                return;
+            }
+
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; // Set language dynamically if needed
+
+            micButton.addEventListener('click', () => {
+                if (micButton.classList.contains('listening')) {
+                    recognition.stop();
+                    return;
+                }
+
+                try {
+                    recognition.start();
+                    micButton.classList.add('listening');
+                    micButton.setAttribute('aria-pressed', 'true');
+                    micIcon.textContent = "mic_off";
+                    voiceStatus.textContent = "Listening... Speak now";
+                } catch (e) {
+                    voiceStatus.textContent = "Error: " + e.message;
+                }
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                symptomsInput.value = transcript;
+                micButton.classList.remove('listening');
+                micButton.setAttribute('aria-pressed', 'false');
+                micIcon.textContent = "mic";
+                voiceStatus.textContent = "Voice input received";
+            };
+
+            recognition.onerror = (event) => {
+                micButton.classList.remove('listening');
+                micButton.setAttribute('aria-pressed', 'false');
+                micIcon.textContent = "mic";
+                voiceStatus.textContent = "Error: " + event.error;
+            };
+
+            recognition.onend = () => {
+                micButton.classList.remove('listening');
+                micButton.setAttribute('aria-pressed', 'false');
+                micIcon.textContent = "mic";
+                if (voiceStatus.textContent === "Listening... Speak now") {
+                    voiceStatus.textContent = "Listening stopped";
+                }
+            };
+
+            const resultBox = document.getElementById("result-box");
+            const feedbackSection = document.getElementById("feedback-section");
+
+            if (resultBox) {
+                resultBox.style.opacity = 0;
+                resultBox.style.display = "block";
+                setTimeout(() => {
+                    resultBox.style.transition = "opacity 0.6s ease-in-out";
+                    resultBox.style.opacity = 1;
+                }, 100);
+
+                if (feedbackSection) {
+                    feedbackSection.style.display = "block";
+                    document.getElementById("feedback-yes").disabled = false;
+                    document.getElementById("feedback-no").disabled = false;
+                    document.getElementById("feedback-response").textContent = "";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
