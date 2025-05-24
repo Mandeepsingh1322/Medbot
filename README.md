@@ -11,11 +11,13 @@ MedBot is a multilingual, AI-powered chatbot that provides preliminary medical d
 
 ## 📸 Screenshots
 
-<img src="screenshots/home.png" width="300">  
+![image](https://github.com/user-attachments/assets/f76b7408-02b0-4027-b2d4-2edc622dfc58)
+ 
 *Figure 1: MedBot Home Page*
 
-<img src="screenshots/diagnosis-result.png" width="300">  
-*Figure 2: Sample Diagnosis Output (Responsive on Mobile)*
+![image](https://github.com/user-attachments/assets/935e5497-1868-415e-84d3-1873d4e4c129)
+  
+*Figure 2: Sample Diagnosis Output *
 
 ---
 
@@ -47,3 +49,63 @@ MedBot is a multilingual, AI-powered chatbot that provides preliminary medical d
 
 ## 📂 Project Structure
 
+📁 medical_diagnosis_chatbot
+
+│
+
+├── app.py # Flask backend
+
+├── preprocess.py # Model training and saving
+
+├── templates/
+
+│          └── index.html
+
+├── static/
+
+│          ├── styles.css
+
+│          └── images/
+
+├── models/
+
+│          ├── model.pkl
+
+│          ├── vectorizer.pkl
+
+
+│          └── disease_info.pkl
+
+├── requirements.txt
+
+├── Procfile
+
+└── render.yaml
+
+---
+
+## 📊 Model Accuracy
+
+Model: Multinomial Naive Bayes
+
+Vectorizer: TF-IDF
+
+Accuracy: 90%+
+
+Evaluation: classification_report() available in preprocess.py
+
+---
+
+## 📱 QR Code to App
+
+Scan to open MedBot on your phone
+
+![image](https://github.com/user-attachments/assets/efd5439b-4cd9-4575-915c-ae4e76bfc355)
+
+---
+
+## 🙋 Authors
+
+Mandeep Singh – [GitHub](https://github.com/Mandeepsingh1322)
+
+Shivam – GitHub
