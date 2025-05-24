@@ -108,4 +108,4 @@ Scan to open MedBot on your phone
 
 Mandeep Singh – [GitHub](https://github.com/Mandeepsingh1322)
 
-Shivam – GitHub
+Shivam – [GitHub](https://github.com/Sgarg1208)
